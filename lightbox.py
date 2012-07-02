@@ -23,13 +23,15 @@ class Main:
         self.player = gst.Pipeline(name='player')
         self.source = gst.element_factory_make('v4l2src', 'source')
         self.filter = gst.element_factory_make("capsfilter", "filter")
+        self.flipper = gst.element_factory_make("videoflip", "flipper")
         sink = gst.element_factory_make('xvimagesink', 'sink')
 
         self.player.add(self.source)
         self.player.add(self.filter)
+        self.player.add(self.flipper)
         self.player.add(sink)
 
-        gst.element_link_many(self.source, self.filter, sink)
+        gst.element_link_many(self.source, self.filter, self.flipper, sink)
 
         bus = self.player.get_bus()
         bus.add_signal_watch()
@@ -96,6 +98,13 @@ class Main:
             self._start()
         else:
             self.videowindow.hide()
+
+    def _on_orientation_changed(self, combobox):
+        self._stop()
+        method = combobox.get_model()[combobox.get_active()][1]
+        print method
+        self.flipper.set_property('method', method)
+        self._start()
 
     def _stop(self):
         self.player.set_state(gst.STATE_NULL)

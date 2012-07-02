@@ -29,6 +29,32 @@
       <column type="gchararray"/>
     </columns>
   </object>
+  <object class="GtkListStore" id="orientations">
+    <columns>
+      <!-- column-name label -->
+      <column type="gchararray"/>
+      <!-- column-name value -->
+      <column type="guint"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">0°</col>
+        <col id="1">0</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">90°</col>
+        <col id="1">1</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">180°</col>
+        <col id="1">2</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">270°</col>
+        <col id="1">3</col>
+      </row>
+    </data>
+  </object>
   <object class="GtkWindow" id="main">
     <property name="can_focus">False</property>
     <child>
@@ -141,7 +167,74 @@
           </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkFrame" id="frame1">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label_xalign">0</property>
+            <property name="shadow_type">none</property>
+            <child>
+              <object class="GtkAlignment" id="alignment2">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="left_padding">12</property>
+                <child>
+                  <object class="GtkGrid" id="grid2">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkLabel" id="label4">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="xalign">0</property>
+                        <property name="label" translatable="yes">Rotate</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">0</property>
+                        <property name="width">1</property>
+                        <property name="height">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkComboBox" id="combobox2">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="hexpand">True</property>
+                        <property name="model">orientations</property>
+                        <property name="active">0</property>
+                        <signal name="changed" handler="_on_orientation_changed" swapped="no"/>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellrenderertext3"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">0</property>
+                        <property name="width">1</property>
+                        <property name="height">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child type="label">
+              <object class="GtkLabel" id="label3">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">&lt;b&gt;Transform&lt;/b&gt;</property>
+                <property name="use_markup">True</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
         </child>
         <child>
           <placeholder/>
@@ -172,7 +265,6 @@
         <child>
           <object class="GtkSpinner" id="spinner">
             <property name="can_focus">False</property>
-            <property name="active">True</property>
           </object>
           <packing>
             <property name="expand">True</property>
