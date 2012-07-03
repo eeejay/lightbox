@@ -60,12 +60,12 @@ class Main:
                     formats_combo.set_sensitive(True)
         elif t == gst.MESSAGE_EOS:
             print "MESSAGE EOS"
-            self.video_player.set_state(gst.STATE_NULL)
+            self.player.set_state(gst.STATE_NULL)
         elif t == gst.MESSAGE_ERROR:
             print "MESSAGE ERROR"
             err, debug = message.parse_error()
             print "Error: %s" % err, debug
-            self.video_player.set_state(gst.STATE_NULL)
+            self.player.set_state(gst.STATE_NULL)
 
     def _on_sync_message(self, bus, message):
         print '_on_sync_message', self.videosink
@@ -81,6 +81,8 @@ class Main:
             imagesink.set_xwindow_id(self.videosink.get_window().get_xid())
 
     def _on_format_changed(self, combobox):
+        if combobox.get_active() < 0:
+            return
         _, w, h, f, n  = self.formats[combobox.get_active()]
         self._stop()
         caps = gst.Caps("%s, width=%d, height=%d,framerate=(fraction)%d/1" % (n, w, h, f))
@@ -105,6 +107,10 @@ class Main:
         print method
         self.flipper.set_property('method', method)
         self._start()
+
+    def _on_videowindow_destroy(self, widget):
+        print '_on_videowindow_destroy'
+        self._stop()
 
     def _stop(self):
         self.player.set_state(gst.STATE_NULL)
