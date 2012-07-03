@@ -14,10 +14,8 @@ class Main:
         self.builder.add_from_file("lightbox.xml") 
         self.builder.connect_signals(self)
         self.devices = self.builder.get_object("devices")
+        self.device_combo = self.builder.get_object("device_combo")
         self.formats = self.builder.get_object("formats")
-        self.videosink = self.builder.get_object("videosink")
-        self.spinner = self.builder.get_object("spinner")
-        self.videowindow = self.builder.get_object("videowindow")
         self.udev_client = GUdev.Client.new(['video4linux'])
 
         self.player = gst.Pipeline(name='player')
@@ -60,25 +58,21 @@ class Main:
                     formats_combo.set_sensitive(True)
         elif t == gst.MESSAGE_EOS:
             print "MESSAGE EOS"
-            self.player.set_state(gst.STATE_NULL)
+            self._stop()
+            self.device_combo.set_active(0)
         elif t == gst.MESSAGE_ERROR:
             print "MESSAGE ERROR"
             err, debug = message.parse_error()
             print "Error: %s" % err, debug
-            self.player.set_state(gst.STATE_NULL)
+            self.device_combo.set_active(0)
 
     def _on_sync_message(self, bus, message):
-        print '_on_sync_message', self.videosink
         if message.structure is None:
             return
         message_name = message.structure.get_name()
         if message_name == "prepare-xwindow-id":
-            #self.spinner.hide()
             imagesink = message.src
-            self.videosink.set_vexpand(True)
-            self.spinner.set_vexpand(False)
             imagesink.set_property("force-aspect-ratio", True)
-            imagesink.set_xwindow_id(self.videosink.get_window().get_xid())
 
     def _on_format_changed(self, combobox):
         if combobox.get_active() < 0:
@@ -98,8 +92,6 @@ class Main:
         if device:
             self.source.set_property('device', device.get_device_file())
             self._start()
-        else:
-            self.videowindow.hide()
 
     def _on_orientation_changed(self, combobox):
         self._stop()
@@ -108,19 +100,11 @@ class Main:
         self.flipper.set_property('method', method)
         self._start()
 
-    def _on_videowindow_destroy(self, widget):
-        print '_on_videowindow_destroy'
-        self._stop()
-
     def _stop(self):
         self.player.set_state(gst.STATE_NULL)
-        #self.builder.get_object("spinner").show()
-        self.videosink.set_vexpand(True)
-        #self.spinner.set_vexpand(True)
 
     def _start(self):
         self.player.set_state(gst.STATE_PLAYING)
-        self.videowindow.show()
 
     def run(self):
         for device in self.udev_client.query_by_subsystem("video4linux"):
