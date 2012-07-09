@@ -44,6 +44,7 @@ class Main:
             if newstate == gst.STATE_PAUSED:
                 formats_combo = self.builder.get_object("formats_combo")
                 existing_labels = set()
+                formats = []
                 if not formats_combo.get_sensitive():
                     for caps in self.source.get_pad('src').get_caps():
                         structure_name = caps.get_name()
@@ -52,9 +53,15 @@ class Main:
                                 label = '%d x %d @ %d fps' % (caps['width'], caps['height'], fr.num)
                                 if label in existing_labels:
                                     continue
-                                self.formats.append(
-                                    [label, caps['width'], caps['height'], fr.num, structure_name])
+                                formats.append([label, caps['width'], caps['height'], fr.num, structure_name])
+                                print label
                                 existing_labels.add(label)
+                    formats.sort(lambda x, y: cmp(x[1], y[1]) or \
+                                     cmp(x[2], y[2]) or cmp(x[3], y[3]),
+                                 None, True)
+                    for row in formats:
+                        self.formats.append(row)
+                    formats_combo.set_active(0)
                     formats_combo.set_sensitive(True)
         elif t == gst.MESSAGE_EOS:
             print "MESSAGE EOS"
