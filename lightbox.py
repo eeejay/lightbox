@@ -110,9 +110,9 @@ class Main:
             self._start()
 
     def _delete_device_widgets(self):
-        focusgrid = self.builder.get_object("focusgrid")
-        for child in focusgrid.get_children():
-            child.destroy()
+        for grid in [self.builder.get_object("focusgrid"), self.builder.get_object("expgrid")]:
+            for child in grid.get_children():
+                child.destroy()
 
     def _populate_device_widgets(self, dev):
         print '_populate_device_widgets'
@@ -151,7 +151,6 @@ class Main:
 
             print 'Warning: line did not match anything: %s' % repr(line)
 
-        #pprint(controls)
         controls_dict = {}
         for control in controls:
             controls_dict[control.pop('name')] = control
@@ -202,7 +201,8 @@ class Main:
         method = combobox.get_model()[combobox.get_active()][1]
         print method
         self.flipper.set_property('method', method)
-        self._start()
+        if self.device_combo.get_active():
+            self._start()
 
     def _stop(self):
         self.player.set_state(gst.STATE_NULL)
@@ -221,6 +221,10 @@ class Main:
         Gtk.main()
 
 class V4LControl:
+    LABELS = {'focus_auto': 'Auto',
+              'focus_absolute': 'Absolute',
+              'exposure_auto': 'Auto',
+              'exposure_absolute': 'Absolute'}
     def __init__(self, device, control_name, control_info):
         self.name = control_name
         self.info = control_info
@@ -243,9 +247,9 @@ class V4LControl:
             print 'value', float(params['value'])
             self.widget.set_value(float(params['value']))
             self.widget.connect('value-changed', self._onchanged)
-            self.label = self.name
+            self.label = self.LABELS.get(self.name, self.name)
         elif self.info['type'] == 'bool':
-            self.widget = Gtk.CheckButton.new_with_label(self.name)
+            self.widget = Gtk.CheckButton.new_with_label(self.LABELS.get(self.name, self.name))
             self.widget.set_active(int(params['value']) != 0)
             self.widget.connect('toggled', self._onchanged)
             self.label = None
@@ -257,7 +261,7 @@ class V4LControl:
                     active_option = i
                 self.widget.append(*option)
             self.widget.set_active(active_option)
-            self.label = self.name
+            self.label = self.LABELS.get(self.name, self.name)
             self.widget.connect('changed', self._onchanged)
 
 
@@ -282,9 +286,8 @@ class V4LControl:
     def _poll_process(self, process):
         retcode = process.poll()
         if retcode is not None: # Process finished.
-            print 'retcode:', retcode
-            #print 'stdout', process.stdout.read()
-            #print 'stderr', process.stderr.read()
+            if retcode != 0:
+                raise Exception("Failed to run: %s" % process.stderr.read())
             self._idler = 0
             if self._next_cmd:
                 self._run_command(self._next_cmd)
